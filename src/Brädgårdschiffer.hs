@@ -1,16 +1,7 @@
 module Brädgårdschiffer where
 
 import Text.Printf (printf)
-import System.Environment
-import System.IO
 import Data.Char(toLower)
-
--- main :: IO ()
--- main = do
---     args <- getArgs
---     case args of
---         [] -> putStrLn "No string provided"
---         x -> printf "%s\n" $ concrypt $ map toLower $ concat x
 
 encryptBGC :: String -> String
 encryptBGC x = printf "%s\n" $ concrypt $ map toLower x

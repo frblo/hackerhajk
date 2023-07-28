@@ -3,6 +3,7 @@ import UI.HSCurses.Curses
 import Control.Concurrent (threadDelay)
 import Challenges (generateBGC)
 import HSBlessings (wAddCenterMultiStr)
+import Effects (intro)
 
 data State = Start | Challenge Int | End
 
@@ -10,6 +11,8 @@ main :: IO ()
 main = do
     initCurses
     setup
+    intro
+    createChallenge
     programloop
     endWin
 
@@ -19,14 +22,11 @@ setup = do
     echo False
     cursSet CursorInvisible
     noDelay stdScr True
-    createChallenge
 
 createChallenge :: IO ()
 createChallenge = do
     bgc <- generateBGC
-    (maxY, maxX) <- scrSize
     wAddCenterMultiStr bgc
-    refresh
 
 programloop :: IO ()
 programloop = do

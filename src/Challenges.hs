@@ -1,7 +1,7 @@
 module Challenges where
 
 import Brädgårdschiffer(encryptBGC)
-import System.Random
+import System.Random ( randomRIO )
 
 getWords :: IO [String]
 getWords = do

@@ -31,7 +31,8 @@ executable hackerhajk
     -- Modules included in this executable, other than Main.
     other-modules:    Challenges,
                       Brädgårdschiffer,
-                      HSBlessings
+                      HSBlessings,
+                      Effects
                       
 
     -- LANGUAGE extensions used by modules in this package.

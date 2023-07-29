@@ -10,6 +10,7 @@ wAddCenterSingleStr str = do
     (maxY, maxX) <- scrSize
     mvWAddStr stdScr (maxY `div` 2) ((maxX - length str) `div` 2) str
 
+-- | Prints a string to the standard screen in the center of it at a certain y position
 mwAddCenterSingleStr :: Int -> String -> IO ()
 mwAddCenterSingleStr y str = do
     (_, maxX) <- scrSize

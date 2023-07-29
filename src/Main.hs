@@ -9,7 +9,7 @@ import UI.HSCurses.Curses
       refresh,
       stdScr,
       CursorVisibility(CursorInvisible),
-      Key (KeyChar),
+      Key (KeyChar, KeyBackspace),
       decodeKey,
       getch )
 import Control.Concurrent (threadDelay)
@@ -28,11 +28,12 @@ main :: IO ()
 main = do
     initCurses
     setup
-    -- intro
+    -- intro -- uncomment this to see the intro
     state <- createChallenge
     programloop state
     endWin
 
+-- | Sets up the curses library
 setup :: IO ()
 setup = do
     keypad stdScr True
@@ -40,6 +41,7 @@ setup = do
     cursSet CursorInvisible
     noDelay stdScr True
 
+-- | Creates a new challenge and create a new state with the challenge
 createChallenge :: IO State
 createChallenge = do
     bgc <- generateBGC
@@ -47,14 +49,18 @@ createChallenge = do
     challengeInput $ snd bgc
     return $ State 0 (snd bgc) ""
 
+-- | The loop that runs the program and draws the screen
 programloop :: State -> IO ()
 programloop (State cha sol guess) = do
-    writeGuess guess sol
+    writeGuess guess sol -- Write the current guess
+
+    -- Get the pressed down character, if there is any
     ch <- decodeKey <$> getch
     case ch of
         KeyChar a -> programloop $ State cha sol (guess ++ [a])
+        KeyBackspace -> programloop $ State cha sol (init guess)
         _         -> return ()
-
-    refresh
-    threadDelay 100000
+    
+    refresh -- refresh the screen
+    threadDelay 100000 -- wait 0.1 seconds until next iteration
     programloop $ State cha sol guess

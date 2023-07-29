@@ -24,6 +24,7 @@ data State = State {
     guess :: String
 }
 
+-- | Main function, what more is there to say?
 main :: IO ()
 main = do
     initCurses

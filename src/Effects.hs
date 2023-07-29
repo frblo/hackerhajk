@@ -12,8 +12,8 @@ intro = do
     progressbar 0
     wclear stdScr
 
--- | Meaningless progress bar meant to trick stupid children
--- | that is just there to look cool and trick stupid children, just like most progress bars
+-- | Meaningless progress bar meant to trick stupid children that is just 
+-- there to look cool and trick stupid children, just like most progress bars
 progressbar :: Int -> IO ()
 progressbar progress = do
     if progress >= 30 then return () else do
@@ -24,7 +24,7 @@ progressbar progress = do
         progressbar (progress + 1)
 
 -- | Draws ‾-characters for each character in the solution for the current challenge
--- | with spaces between them to make it easier to see how many characters there are
+-- with spaces between them to make it easier to see how many characters there are
 challengeInput :: String -> IO ()
 challengeInput solution = do
     maxY <- fst <$> scrSize

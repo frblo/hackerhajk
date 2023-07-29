@@ -14,8 +14,8 @@ randomWord ord = do
     i <- randomRIO (0, length ord - 1)
     return $ ord !! i
 
-generateBGC :: IO String
+generateBGC :: IO (String, String)
 generateBGC = do
     ord <- getWords
     word <- randomWord ord
-    return $ encryptBGC word
+    return (encryptBGC word, word)

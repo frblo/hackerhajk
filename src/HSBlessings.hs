@@ -2,7 +2,7 @@ module HSBlessings where
 
 -- A group of helper functions for the HSCurses library
 
-import UI.HSCurses.Curses (scrSize, stdScr, mvWAddStr)
+import UI.HSCurses.Curses (scrSize, stdScr, mvWAddStr, decodeKey, getch, Key (KeyChar))
 
 -- | Prints a string to the standard screen in the center of it
 wAddCenterSingleStr :: String -> IO ()

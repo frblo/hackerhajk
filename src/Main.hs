@@ -1,67 +1,81 @@
 module Main where
-import UI.HSCurses.Curses
-    ( cursSet,
-      echo,
-      endWin,
-      initCurses,
-      keypad,
-      noDelay,
-      refresh,
-      stdScr,
-      CursorVisibility(CursorInvisible),
-      Key (KeyChar, KeyBackspace),
-      decodeKey,
-      getch )
-import Control.Concurrent (threadDelay)
+-- import Control.Concurrent (threadDelay)
 import Challenges (generateBGC)
-import HSBlessings (wAddCenterMultiStr)
-import Effects (intro, challengeInput, writeGuess)
+-- import HSBlessings (wAddCenterMultiStr, mwAddCenterSingleStr)
+import Effects (challengeInput, writeGuess)
+import Control.Monad (when)
+import Vtyhelper (centerSingleString, centerSingleStringAt, centerMultiStrings)
+import Graphics.Vty
 
 -- data State = Start | Challenge Int | End
 data State = State {
     challenge :: Int,
     solution :: String,
-    guess :: String
+    guess :: String,
+    cipher :: Image
 }
 
 -- | Main function, what more is there to say?
 main :: IO ()
 main = do
-    initCurses
-    setup
-    -- intro -- uncomment this to see the intro
-    state <- createChallenge
-    programloop state
-    endWin
+    cfg <- standardIOConfig
+    vty <- mkVty cfg
 
--- | Sets up the curses library
-setup :: IO ()
-setup = do
-    keypad stdScr True
-    echo False
-    cursSet CursorInvisible
-    noDelay stdScr True
+    state <- createChallenge vty
+    programloop vty state
+    shutdown vty
+
+programloop :: Vty -> State -> IO ()
+programloop vty (State cha sol guess cipher) = do
+    -- let newGuess = appendGuess (State cha sol guess) $ maybe "" (:[]) lastKey  -- Convert the Maybe Char to a string
+    guessIn <- writeGuess vty guess sol -- Get the guess input
+
+
+    let display = cipher <-> guessIn  -- Combine the two inputs
+
+    update vty $ picForImage display
+    -- writeGuess guess sol -- Write the current guess
+    -- let display = string defAttr "hello world" <->
+    --               string defAttr ("Last key: " ++ maybe "None" show lastKey)
+
+    e <- nextEvent vty
+    case e of
+        EvKey (KChar a) [] -> when (length guess < length sol) $ programloop vty (State cha sol (guess ++ [a]) cipher)
+        -- EvKey (KChar a) [] -> programloop vty (State cha sol (guess ++ [a])) (Just a)
+        EvKey KBS [] -> when (guess /= []) $ programloop vty (State cha sol (init guess) cipher)
+        EvKey KEsc [] -> return ()               -- exit on escape key
+        _ -> programloop vty (State cha sol guess cipher)   -- continue with the current state for other events
+
+
+    -- e <- nextEvent vty
+    -- case e of
+    --     EvKey (KChar a) [] -> when (length guess < length sol) $ programloop $ State cha sol (guess ++ [a])
+    --     EvKey KBS [] -> when (guess /= []) $ programloop $ State cha sol (init guess)
+    --     _ -> return ()
+
+    -- threadDelay 10000
+    -- programloop $ State cha sol guess
+
+-- appendGuess :: State -> String -> String
+-- appendGuess (State _ sol guess) x
+--     | length guess < length sol = guess ++ x
+--     | otherwise = guess
 
 -- | Creates a new challenge and create a new state with the challenge
-createChallenge :: IO State
-createChallenge = do
+createChallenge :: Vty -> IO State
+createChallenge vty = do
     bgc <- generateBGC
-    wAddCenterMultiStr $ fst bgc
-    challengeInput $ snd bgc
-    return $ State 0 (snd bgc) ""
+    cipher <- centerMultiStrings vty $ fst bgc
+    return (State 0 (snd bgc) "" cipher)
 
--- | The loop that runs the program and draws the screen
-programloop :: State -> IO ()
-programloop (State cha sol guess) = do
-    writeGuess guess sol -- Write the current guess
-
-    -- Get the pressed down character, if there is any
-    ch <- decodeKey <$> getch
-    case ch of
-        KeyChar a -> programloop $ State cha sol (guess ++ [a])
-        KeyBackspace -> programloop $ State cha sol (init guess)
-        _         -> return ()
-    
-    refresh -- refresh the screen
-    threadDelay 100000 -- wait 0.1 seconds until next iteration
-    programloop $ State cha sol guess
+-- eventLoop :: Vty -> Maybe Char -> IO ()
+-- eventLoop vty lastKey = do
+--     let displayKey = maybe "None" (:[]) lastKey  -- Convert the Maybe Char to a string
+--     let display = string defAttr "hello world" <->
+--                   string defAttr ("Last key: " ++ displayKey)
+--     update vty $ picForImage display
+--     event <- nextEvent vty
+--     case event of
+--         EvKey (KChar c) [] -> eventLoop vty (Just c)  -- update with the pressed key
+--         EvKey KEsc []      -> return ()               -- exit on escape key
+--         _                  -> eventLoop vty lastKey   -- continue with the current state for other events
